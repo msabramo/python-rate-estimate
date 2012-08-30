@@ -2,20 +2,23 @@ import datetime
 import logging
 import time
 
-from parsedatetime import parsedatetime  # http://pypi.python.org/pypi/parsedatetime/
-import dateutil.parser  # http://pypi.python.org/pypi/python-dateutil/
-
-calendar = parsedatetime.Calendar()
-
 logger = logging.getLogger()
 
 
 def get_epoch_time_from_string(s):
     try:
+        import dateutil.parser  # http://pypi.python.org/pypi/python-dateutil/
         return dateutil.parser.parse(s)
-    except ValueError:
-        logger.debug("dateutil.parser.parse failed to parse: %r; trying parsedatetime.Calendar..." % s)
-        return time.mktime(calendar.parse(s)[0])
+    except (ImportError, ValueError):
+        # parsedatetime can parse stuff like "yesterday" and "today" but it doesn't work with Python 3
+        try:
+            from parsedatetime import parsedatetime  # http://pypi.python.org/pypi/parsedatetime/
+        except ImportError:
+            raise ValueError("Couldn't parse datetime string: %r" % s)
+        else:
+            calendar = parsedatetime.Calendar()
+            logger.debug("dateutil.parser.parse failed to parse: %r; trying parsedatetime.Calendar..." % s)
+            return time.mktime(calendar.parse(s)[0])
 
 
 def rate_estimate(time_value_pairs_sequence):

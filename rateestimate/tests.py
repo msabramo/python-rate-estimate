@@ -1,6 +1,10 @@
 import datetime
 import time
-import unittest
+
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from rateestimate import rate_estimate
 
@@ -58,6 +62,11 @@ class DateTimeParseRateEstimateTests(unittest.TestCase):
         self.assertAlmostEqual(rate_estimate(time_value_pairs_sequence), 5.0)
 
     def test_120_per_minute_span_midnight_yesterday_and_today(self):
+        try:
+            from parsedatetime import parsedatetime  # http://pypi.python.org/pypi/parsedatetime/
+        except ImportError:
+            self.skipTest("This test requires parsedatetime")
+
         time_value_pairs_sequence = [
             ('yesterday 23:58', 20),
             ('yesterday 23:59', 140),
